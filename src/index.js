@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import _ from 'lodash';
 import YTSearch from 'youtube-api-search';
 import SearchBar from './components/search_bar';
 import VideoDetail from './components/video_detail';
@@ -13,12 +14,15 @@ class App extends Component {
     super(props);
     this.state = { 
       videos: [],
+      //set videos to arr so users can see data right away
       selectedVideo: null
     };
-    //set videos to arr so users can see data right away
-
-    //when search is kicked off will update setstate with surfboard videos
-    YTSearch({key: API_KEY, term: 'surfboards' }, (videos) => {
+    this.videoSearch('surfboards');
+    //when search is kicked off will update videoSearch with surfboard videos
+  }
+  
+  videoSearch(term) {
+    YTSearch({key: API_KEY, term: term }, (videos) => {
       this.setState({ 
         videos: videos,
         selectedVideo: videos[0]
@@ -26,13 +30,18 @@ class App extends Component {
       //if key and value are the same can use ES6 and combine object.
       //this.setState ({ videos: videos })
     });
-  
   }
 
   render() {
+    const videoSearch = _.debounce((term) => { this.videoSearch(term) }, 300)
+    // created an arrow function and passed it to debounce.
+    //debounce takes the function that's passed in and returns a new function that can be called only 300 miliseconds (throttling user input)
+    // when function is ran it will do so with a search term or a string and it will be sent to videoSearch
+    // were term pops up in videoSearch and searchs video 
+
     return (
       <div>
-        <SearchBar />
+        <SearchBar onSearchTermChange={videoSearch} />
         <VideoDetail video={this.state.selectedVideo}/>
         {/* passing prop videos to VideoList */}
         <VideoList 
